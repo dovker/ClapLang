@@ -1,0 +1,124 @@
+include "stdlib"
+include "clap"
+include "math"
+
+//Builtin vector operators
+//OR MAYBE builtin glm support
+//any is holder for any data value
+//REGISTERS
+//LISTS AND MAPS
+// i64 i32 i16 i8
+// u64 u32 u16 u8
+// b8 f32 f64 
+//terraria style metroidvania
+
+type Event
+{
+    int EventType;
+    any Data;
+}
+
+type CustomEntity
+{
+    Clap:Transform = (Position: (10.0, 0.0, 0.0), Scale = (1.0, 2.0, 1.0));
+    vec2 Origin = (0, 0);
+    static i32 EntityCount = 0;
+
+    fn CustomEntity()
+    {
+        self.EntityCount++;
+    }
+
+    static fn PrintEntityCount()
+    {
+        std:print("Entity count: ", EntityCount, '\n');
+    }
+}
+
+type HealthPotion
+{
+    num Health = 10.0;
+}
+
+type Player : CustomEntity
+{
+    b8 OnGround = false;
+    num  Health   = 100.0;
+    i32 DeathCount = 0;
+
+    fn Player(health: int)
+    {
+        self.CustomEntity = CustomEntity(); //Does this automatically
+        self.Health = health;
+    }
+
+    fn Die()
+    {
+        DeathCount++;
+    } 
+
+    operator + (potion: HealthPotion)
+    {
+        self.Health += potion.HealthPotion;
+    }
+
+    fn Hurt(count: int)
+    {
+        Health -= count;
+        if (Health <= 0.0)
+            Die();
+        else std:print("Not dead yet", '\n');
+    }
+
+    fn DeathHealthRatio()
+    {
+        if(self.DeathCount != 0 && self.Health != 0.0)
+            return DeathCount / Health;
+        return -1.0;
+    }
+}
+
+type PlayerComponent
+{
+    Player Player;
+}
+
+var players;
+
+fn OnStart()
+{
+    var pl = Player();
+    players = Player[];
+    players = { Player(), Player(), Player() };
+    var playerMap = { "Amoung": players[0], "Amung": players[1], "Moungg": players[2] };
+
+    Clap:World world = Clap:GetWorld();
+    world.RegisterComponent(PlayerComponent);
+
+    using Clap;
+    Entity e = world:CreateEntity();
+    e.AddComponent( PhysicsComponent() );
+    e.AddComponent( PlayerComponent(1) );
+    e[PhysicsComponent].OnCollision = fn (collisionPoint: vec3) //PhysicsComponent is also an ID
+    {
+        e[PlayerComponent].Health--;
+    } ;
+}
+
+fn OnUpdate(dt)
+{
+    for(var e in players)
+    {
+        e.Health--;
+    }
+}
+
+fn OnRender()
+{
+
+}
+
+fn OnEvent(event)
+{
+
+}
