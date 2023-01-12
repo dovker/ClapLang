@@ -4,6 +4,6 @@
 
 namespace Clap
 {
-    void DisassembleChunk(const Chunk& chunk, std::string name);
-    int DisassembleInstruction(const Chunk& chunk, int offset);
+    void DisassembleChunk(Chunk& chunk, std::string name);
+    int DisassembleInstruction(Chunk& chunk, int offset);
 }

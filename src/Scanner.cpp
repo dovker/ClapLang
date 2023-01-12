@@ -12,102 +12,101 @@ namespace Clap
         {
             ScanToken();
         }
-        AddToken(TokenType::ENDOFFILE);
         return m_Tokens; 
     }
 
-    void Scanner::ScanToken()
+    Token Scanner::ScanToken()
     {
         SkipWhitespace();
         m_Start = m_Current;
 
         char c = Advance();
 
-        if(IsAlpha(c)) { Identifier(); return; }
-        if(IsDigit(c)) { Number(); return; }
+        if(IsAlpha(c)) { return Identifier(); }
+        if(IsDigit(c)) { return Number(); }
         switch (c)
         {
-            case '(': AddToken(TokenType::LEFT_PAREN); break;
-            case ')': AddToken(TokenType::RIGHT_PAREN); break;
-            case '{': AddToken(TokenType::LEFT_BRACE); break;
-            case '}': AddToken(TokenType::RIGHT_BRACE); break;
-            case '[': AddToken(TokenType::LEFT_BRACKET); break;
-            case ']': AddToken(TokenType::RIGHT_BRACKET); break;
-            case ',': AddToken(TokenType::COMMA); break;
-            case '.': AddToken(TokenType::DOT); break;
-            case ';': AddToken(TokenType::SEMICOLON); break;
-            case ':': AddToken(TokenType::COLON); break;
-            case '~': AddToken(TokenType::TILDE); break;
-            case '?': AddToken(TokenType::QUERY); break;
-            case '$': AddToken(TokenType::DOLLAR_SIGN); break;
+            case '(': return AddToken(TokenType::LEFT_PAREN); break;
+            case ')': return AddToken(TokenType::RIGHT_PAREN); break;
+            case '{': return AddToken(TokenType::LEFT_BRACE); break;
+            case '}': return AddToken(TokenType::RIGHT_BRACE); break;
+            case '[': return AddToken(TokenType::LEFT_BRACKET); break;
+            case ']': return AddToken(TokenType::RIGHT_BRACKET); break;
+            case ',': return AddToken(TokenType::COMMA); break;
+            case '.': return AddToken(TokenType::DOT); break;
+            case ';': return AddToken(TokenType::SEMICOLON); break;
+            case ':': return AddToken(TokenType::COLON); break;
+            case '~': return AddToken(TokenType::TILDE); break;
+            case '?': return AddToken(TokenType::QUERY); break;
+            case '$': return AddToken(TokenType::DOLLAR_SIGN); break;
 
             case '+':
                 if (Match('='))
-                    AddToken(TokenType::PLUS_EQUAL);
+                    return AddToken(TokenType::PLUS_EQUAL);
                 else if (Match('+'))
-                    AddToken(TokenType::PLUS_PLUS);
-                else AddToken(TokenType::PLUS);
+                    return AddToken(TokenType::PLUS_PLUS);
+                else return AddToken(TokenType::PLUS);
                 break;
             case '-':
                 if (Match('='))
-                    AddToken(TokenType::MINUS_EQUAL);
+                    return AddToken(TokenType::MINUS_EQUAL);
                 else if (Match('-'))
-                    AddToken(TokenType::MINUS_MINUS);
-                else AddToken(TokenType::MINUS);
+                    return AddToken(TokenType::MINUS_MINUS);
+                else return AddToken(TokenType::MINUS);
                 break;
             case '*':
-                AddToken(Match('=') ? TokenType::STAR_EQUAL : TokenType::STAR); 
+                return AddToken(Match('=') ? TokenType::STAR_EQUAL : TokenType::STAR); 
                 break;
             case '/': 
-                AddToken(Match('=') ? TokenType::SLASH_EQUAL : TokenType::SLASH);
+                return AddToken(Match('=') ? TokenType::SLASH_EQUAL : TokenType::SLASH);
                 break;
             case '%': 
-                AddToken(Match('=') ? TokenType::PERCENT_EQUAL : TokenType::PERCENT);
+                return AddToken(Match('=') ? TokenType::PERCENT_EQUAL : TokenType::PERCENT);
                 break;
             case '!':
-                AddToken(Match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
+                return AddToken(Match('=') ? TokenType::BANG_EQUAL : TokenType::BANG);
                 break;	
             case '=':
-                AddToken(Match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
+                return AddToken(Match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL);
                 break;
             case '>':
                 if (Match('='))
-                    AddToken(TokenType::GREATER_EQUAL);
+                    return AddToken(TokenType::GREATER_EQUAL);
                 else if (Match('>'))
-                    AddToken(Match('=') ? TokenType::SHIFT_RIGHT_EQUAL : TokenType::SHIFT_RIGHT);
-                else AddToken(TokenType::GREATER);
+                    return AddToken(Match('=') ? TokenType::SHIFT_RIGHT_EQUAL : TokenType::SHIFT_RIGHT);
+                else return AddToken(TokenType::GREATER);
                 break;
             case '<':
                 if (Match('='))
-                    AddToken(TokenType::LESS_EQUAL);
+                    return AddToken(TokenType::LESS_EQUAL);
                 else if (Match('<'))
-                    AddToken(Match('=') ? TokenType::SHIFT_LEFT_EQUAL : TokenType::SHIFT_LEFT);
-                else AddToken(TokenType::LESS);
+                    return AddToken(Match('=') ? TokenType::SHIFT_LEFT_EQUAL : TokenType::SHIFT_LEFT);
+                else return AddToken(TokenType::LESS);
                 break;
             case '&':
                 if (Match('&'))
-                    AddToken(TokenType::AND);
+                    return AddToken(TokenType::AND);
                 else if (Match('='))
-                    AddToken(TokenType::AMPERSAND_EQUAL);
-                else AddToken(TokenType::AMPERSAND);
+                    return AddToken(TokenType::AMPERSAND_EQUAL);
+                else return AddToken(TokenType::AMPERSAND);
                 break;
             case '|':
                 if (Match('|'))
-                    AddToken(TokenType::OR);
+                    return AddToken(TokenType::OR);
                 else if (Match('='))
-                    AddToken(TokenType::PIPE_EQUAL);
-                else AddToken(TokenType::PIPE);
+                    return AddToken(TokenType::PIPE_EQUAL);
+                else return AddToken(TokenType::PIPE);
                 break;
             case '^': 
-                AddToken(Match('=') ? TokenType::CARET_EQUAL : TokenType::CARET); 
+                return AddToken(Match('=') ? TokenType::CARET_EQUAL : TokenType::CARET); 
                 break;
             
-            case '"': String(); break;
+            case '"': return String(); break;
 
-            case '\0': break;
+            case '\0': return AddToken(TokenType::ENDOFFILE); break;
     
             default: 
-                AddToken(ErrorToken("Unexpected character")); 
+                return AddToken(ErrorToken("Unexpected character")); 
                 break;
         }
     }
@@ -127,14 +126,17 @@ namespace Clap
     //{
         //AddToken(type, null);
     //}
-    void Scanner::AddToken(TokenType type)
+    Token Scanner::AddToken(TokenType type)
     {
         std::string text = m_Source.substr(m_Start, m_Current - m_Start);
-        m_Tokens.push_back(Token(type, text, m_Line));
+        Token t = Token(type, text, m_Line);
+        m_Tokens.push_back(t);
+        return t;
     }
-    void Scanner::AddToken(Token token)
+    Token Scanner::AddToken(Token token)
     {
         m_Tokens.push_back(token);
+        return token;
     }
 
     bool Scanner::End()
@@ -163,7 +165,7 @@ namespace Clap
         return m_Source[m_Current+1];
     }
 
-    void Scanner::String()
+    Token Scanner::String()
     {
         while(Peek() != '"' && !End())
         {
@@ -174,12 +176,11 @@ namespace Clap
 
         if(End())
         {
-            AddToken(ErrorToken("Unterminated string"));
-            return;
+            return AddToken(ErrorToken("Unterminated string"));
         }
 
         Advance();
-        AddToken(TokenType::STRING);
+        return AddToken(TokenType::STRING_LITERAL);
     }
 
     bool Scanner::IsDigit(char c)
@@ -205,13 +206,14 @@ namespace Clap
                 }
                 else return TokenType::AND;
                 break;
+            case 'b': return CheckKeyword(1, 3, "ool", TokenType::BOOL); break;
             case 'c': 
                 if(m_Current - m_Start > 1)
                 {
                     switch(m_Source[m_Start + 1])
                     {
                         case 'a': return CheckKeyword(2, 2, "se", TokenType::CASE); break;
-                        case 'o': return CheckKeyword(2, 6, "ntinue", TokenType::CONTINUE); break;
+                        //case 'o': return CheckKeyword(2, 6, "ntinue", TokenType::CONTINUE); break;
                     }
                 }
                 break;
@@ -234,11 +236,26 @@ namespace Clap
                     switch(m_Source[m_Start + 1])
                     {
                         case 'f': return CheckKeyword(2, 0, "", TokenType::IF); break;
-                        case 'n': return CheckKeyword(2, 0, "", TokenType::IN); break;
+                        case 'n': 
+                            if(CheckKeyword(3, 1, "t", TokenType::INT) == TokenType::IDENTIFIER)
+                            {
+                                return CheckKeyword(2, 0, "", TokenType::IN);
+                            }
+                            else return TokenType::INT;
+                        break;
                     }
                 }
                 break;
-            case 'n': return CheckKeyword(1, 2, "il", TokenType::NIL); break;
+            case 'n': 
+                if(m_Current - m_Start > 1)
+                {
+                    switch(m_Source[m_Start + 1])
+                    {
+                        case 'i': return CheckKeyword(2, 1, "l", TokenType::NIL); break;
+                        case 'u': return CheckKeyword(2, 1, "m", TokenType::NUMBER); break;
+                    }
+                }
+                break;
             case 'o': return CheckKeyword(1, 1, "r", TokenType::OR); break;
             case 'p': return CheckKeyword(1, 4, "rint", TokenType::PRINT); break; 
             case 'r': return CheckKeyword(1, 5, "eturn", TokenType::RETURN); break;
@@ -248,7 +265,14 @@ namespace Clap
                     switch(m_Source[m_Start + 1])
                     {
                         case 'e': return CheckKeyword(2, 2, "lf", TokenType::SELF); break;
-                        case 't': return CheckKeyword(2, 4, "atic", TokenType::STATIC); break;
+                        case 'k': return CheckKeyword(2, 2, "ip", TokenType::SWITCH); break;
+                        case 't': 
+                            if(CheckKeyword(2, 4, "ring", TokenType::STRING) == TokenType::IDENTIFIER)
+                            {
+                                return CheckKeyword(2, 4, "atic", TokenType::STATIC);
+                            }
+                            else return TokenType::STRING;
+                        break;
                         case 'w': return CheckKeyword(2, 4, "itch", TokenType::SWITCH); break;
                     }
                 }
@@ -279,13 +303,13 @@ namespace Clap
         return TokenType::IDENTIFIER;
     }
 
-    void Scanner::Identifier()
+    Token Scanner::Identifier()
     {
         while(IsAlpha(Peek()) || IsDigit(Peek())) Advance();
-        AddToken(IdentifierType());
+        return AddToken(IdentifierType());
     }
 
-    void Scanner::Number()
+    Token Scanner::Number()
     {
         while(IsDigit(Peek())) Advance();
         if (Peek() == '.' && IsDigit(PeekNext()))
@@ -294,7 +318,7 @@ namespace Clap
             while (IsDigit(Peek())) Advance();
         }
 
-        AddToken(TokenType::NUMBER);
+        return AddToken(TokenType::NUMBER);
     }
 
     void Scanner::SkipWhitespace()
@@ -334,7 +358,7 @@ namespace Clap
                 int commentStart = 0;
                 bool stringLiteral = false;
                 int offset = 0;
-                for (int i = 0; i < newLine.length() - 1; i++)
+                for (int i = 0; i < newLine.length(); i++)
                 {
                     if(newLine[i] == '"') stringLiteral = !stringLiteral;
                     if(!stringLiteral)

@@ -7,17 +7,19 @@
 #include <sstream>
 
 #include "Scanner.h"
+#include "Value.h"
 
 namespace Clap
 {
     //TODO: SIMD OPTIMIZATIONS AND VECTORS
     enum class OpCode : uint8_t
     {
-        NULL = 0,
+        NIL = 0,
         ADD,
         SUB,
         MUL,
         DIV,
+        IDIV,
         MOD,
         BSR,
         BSL,
@@ -32,13 +34,14 @@ namespace Clap
 
     struct LineStart
     {
-        int Offset;
+        size_t Offset;
         uint32_t Line;
     };
 
     class Chunk
     {
-        void Add(uint8_t byte, uint32_t line);
+    public:
+        void Add(uint8_t byte, uint32_t line)
         {
             Code.push_back(byte);
 
@@ -55,26 +58,26 @@ namespace Clap
         }
         void WriteConstant(Value value, int line)
         {
-            int index = AddConstant(value);
-            int(index < 256)
+            size_t index = AddConstant(value);
+            if(index < 256)
             {
-                Add(OpCode::CONSTANT, line);
-                Add(index, line);
+                Add((uint8_t)OpCode::CONSTANT, line);
+                Add((uint8_t)index, line);
             } else
             {
-                Add(OpCode::CONSTANT_LONG, line);
+                Add((uint8_t)OpCode::CONSTANT_LONG, line);
                 Add((uint8_t)(index & 0xff), line);
-                Add((uint8_t)(index >> 8) & 0xff), line);
-                Add((uint8_t)(index >> 16) & 0xff), line);
+                Add((uint8_t)((index >> 8) & 0xff), line);
+                Add((uint8_t)((index >> 16) & 0xff), line);
             }
         }
         int GetLine(int instruction) 
         {
-            int start = 0;
-            int end = Lines.size() - 1;
+            size_t start = 0;
+            size_t end = Lines.size() - 1;
 
             for (;;) {
-                int mid = (start + end) / 2;
+                size_t mid = (start + end) / 2;
                 LineStart* line = &Lines[mid];
                 if (instruction < line->Offset) 
                     end = mid - 1;
@@ -84,6 +87,7 @@ namespace Clap
                     start = mid + 1;
             }
         }
+
         Value GetConstant(size_t index)
         {
             return Constants[index];
@@ -123,7 +127,7 @@ namespace Clap
             std::vector<Token> tokens = scanner.ScanTokens();
             for(Token t : tokens)
             {
-                //std::cout<<t.ToString()<<std::endl;
+                std::cout<<t.ToString()<<std::endl;
             }
         }
         static void RunFile(const std::string& path)

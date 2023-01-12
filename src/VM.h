@@ -25,10 +25,10 @@ namespace Clap
         InterpretResult Run();
 
     private:
-        Chunk* m_Chunk;
+        Chunk m_Chunk;
         uint8_t* m_PC;
         Value m_Stack[STACK_MAX];
-        value* m_StackTop;
+        Value* m_StackTop;
         //TODO: Registers
     private:
         void ResetStack();

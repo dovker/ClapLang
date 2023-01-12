@@ -7,9 +7,6 @@ include "math"
 //any is holder for any data value
 //REGISTERS
 //LISTS AND MAPS
-// i64 i32 i16 i8
-// u64 u32 u16 u8
-// b8 f32 f64 
 //terraria style metroidvania
 
 type Event
@@ -22,7 +19,7 @@ type CustomEntity
 {
     Clap:Transform = (Position: (10.0, 0.0, 0.0), Scale = (1.0, 2.0, 1.0));
     vec2 Origin = (0, 0);
-    static i32 EntityCount = 0;
+    static int EntityCount = 0;
 
     fn CustomEntity()
     {
@@ -42,9 +39,9 @@ type HealthPotion
 
 type Player : CustomEntity
 {
-    b8 OnGround = false;
+    bool OnGround = false;
     num  Health   = 100.0;
-    i32 DeathCount = 0;
+    int DeathCount = 0;
 
     fn Player(health: int)
     {
@@ -62,6 +59,16 @@ type Player : CustomEntity
         self.Health += potion.HealthPotion;
     }
 
+    fn [+](ogus)
+    {
+        return Math:Floor(health) + ogus;
+    }
+
+    static fn [+](am : std:int, ogus std:int)
+    {
+        return am + ogus;
+    }
+
     fn Hurt(count: int)
     {
         Health -= count;
@@ -70,7 +77,7 @@ type Player : CustomEntity
         else std:print("Not dead yet", '\n');
     }
 
-    fn DeathHealthRatio()
+    fn : num DeathHealthRatio()
     {
         if(self.DeathCount != 0 && self.Health != 0.0)
             return DeathCount / Health;

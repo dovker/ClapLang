@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 
 namespace Clap
 {
@@ -17,15 +16,15 @@ namespace Clap
         EQUAL, EQUAL_EQUAL,
         GREATER, GREATER_EQUAL, SHIFT_RIGHT, SHIFT_RIGHT_EQUAL,
         LESS, LESS_EQUAL, SHIFT_LEFT, SHIFT_LEFT_EQUAL,
-        CARET, CARET_EQUAL,t 
+        CARET, CARET_EQUAL,
         AMPERSAND, AMPERSAND_EQUAL, //AMPERSAND_AMPERSAND,
         PIPE, PIPE_EQUAL, //PIPE_PIPE, 
 
-        IDENTIFIER, STRING, NUMBER,
+        IDENTIFIER, STRING_LITERAL, NUMBER,
         
         TYPE, ELSE, FALSE, FN, FOR, IF, NIL, SWITCH, CASE, BREAK,
-        PRINT, RETURN, STATIC, SELF, TRUE, VAR, WHILE, CONTINUE, DEFAULT,
-        AND, OR, IN, ANY, // UNSIGNED, SHORT, LONG, //INT, NUM, BOOL, STRING
+        PRINT, RETURN, STATIC, SELF, TRUE, VAR, WHILE, SKIP, DEFAULT,
+        AND, OR, IN, ANY, NUM, BOOL, STRING, INT,
         
         ERROR, ENDOFFILE
     };
@@ -55,8 +54,9 @@ namespace Clap
             : m_Source(source) {}
         
         std::vector<Token> ScanTokens();
+        Token ScanToken();
     private:
-        std::string m_Source;
+        std::string m_Source  = "";
         uint32_t m_Line = 1;
         uint32_t m_Start = 0;
         uint32_t m_Current = 0;
@@ -64,11 +64,9 @@ namespace Clap
         std::vector<Token> m_Tokens;
 
     private: 
-        void ScanToken();
-
         Token ErrorToken(std::string message);
-        void AddToken(TokenType type);
-        void AddToken(Token token);
+        Token AddToken(TokenType type);
+        Token AddToken(Token token);
 
         char Advance();
         bool End();
@@ -81,9 +79,9 @@ namespace Clap
         TokenType IdentifierType();
         TokenType CheckKeyword(uint32_t start, uint32_t length, const char* rest, TokenType type);
 
-        void String();
-        void Identifier();
-        void Number();
+        Token String();
+        Token Identifier();
+        Token Number();
         void SkipWhitespace();
         void CleanComments();
     };

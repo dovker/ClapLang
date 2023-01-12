@@ -1,13 +1,14 @@
 #include "VM.h"
+#include "Debug.h"
+#include "Compiler.h"
 
 namespace Clap
 {
     InterpretResult VM::Interpret(const std::string& source)
     {
         Chunk chunk;
-        InitCunk(&chunk);
 
-        if(!Compile(source, chunk))
+        if(!Compiler::Compile(source, &chunk))
         {
             return InterpretResult::COMPILE_ERROR;
         }
@@ -22,13 +23,19 @@ namespace Clap
     InterpretResult VM::Run()
     {
         #define READ_BYTE() *(m_PC++)
-        #define READ_CONSTANT() (m_Chunk->GetConstant(READ_BYTE()))
-        #define READ_CONSTANT_LONG() (m_Chunk->GetConstant(READ_BYTE() | READ_BYTE() << 8 | READ_BYTE() << 16)) 
+        #define READ_CONSTANT() (m_Chunk.GetConstant(READ_BYTE()))
+        #define READ_CONSTANT_LONG() (m_Chunk.GetConstant(READ_BYTE() | READ_BYTE() << 8 | READ_BYTE() << 16)) 
         #define BINARY_OP(op) \
             do { \
-            double b = pop(); \
-            double a = pop(); \
-            push(a op b); \
+            double b = Pop(); \
+            double a = Pop(); \
+            Push(a op b); \
+            } while (false)
+        #define BINARY_OP_INT(op) \
+            do { \
+            uint64_t b = (double)Pop(); \
+            uint64_t a = (double)Pop(); \
+            Push((double)(a op b)); \
             } while (false)
         #ifdef DEBUG_TRACE_EXECUTION
             std::cout<<"          ";
@@ -36,8 +43,7 @@ namespace Clap
                 std::cout<<"[ "<<*slot<<" ]";
             }
             std::cout<<'\n';
-            disassembleInstruction(m_Chunk,
-                                (int)(m_PC - m_Chunk.Begin()));
+            DisassembleInstruction(m_Chunk, (int)(m_PC - m_Chunk.Begin()));
         #endif
 
         for(;;)
@@ -51,14 +57,15 @@ namespace Clap
                 case OpCode::ADD: BINARY_OP(+); break;
                 case OpCode::SUB: BINARY_OP(-); break;
                 case OpCode::DIV: BINARY_OP(/); break;
+                case OpCode::IDIV: BINARY_OP_INT(/); break;
                 case OpCode::MUL: BINARY_OP(*); break;
-                case OpCode::MOD: BINARY_OP(%); break;
-                case OpCode::BSR: BINARY_OP(>>); break;
-                case OpCode::BSL: BINARY_OP(<<); break;
-                case OpCode::XOR: BINARY_OP(^); break;
-                case OpCode::BAND: BINARY_OP(&); break;
-                case OpCode::BOR: BINARY_OP(|); break;
-                case OpCode::NEGATE:
+                case OpCode::MOD: BINARY_OP_INT(%); break;
+                case OpCode::BSR: BINARY_OP_INT(>>); break;
+                case OpCode::BSL: BINARY_OP_INT(<<); break;
+                case OpCode::XOR: BINARY_OP_INT(^); break;
+                case OpCode::BAND: BINARY_OP_INT(&); break;
+                case OpCode::BOR: BINARY_OP_INT(|); break;
+                case OpCode::NEG:
                     Push(-Pop());
                 break;
                 case OpCode::CONSTANT:
@@ -73,6 +80,7 @@ namespace Clap
         #undef READ_CONSTANT
         #undef READ_CONSTANT_LONG
         #undef BINARY_OP
+        #undef BINARY_OP_INT
     }
     
     void VM::ResetStack()
